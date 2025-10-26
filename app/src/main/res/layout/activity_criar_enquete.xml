@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Criar Nova Enquete"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp"
+        android:layout_gravity="center" />
+
+    <EditText
+        android:id="@+id/editTituloEnquete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Título da enquete"
+        android:layout_marginBottom="16dp" />
+
+    <EditText
+        android:id="@+id/editNovaOpcao"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nova opção de voto"
+        android:layout_marginBottom="8dp" />
+
+    <Button
+        android:id="@+id/btnAdicionarOpcao"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Adicionar Opção"
+        android:backgroundTint="#2196F3"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:id="@+id/txtOpcoesAdicionadas"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Opções adicionadas:"
+        android:textSize="16sp"
+        android:layout_marginBottom="24dp"
+        android:padding="16dp"
+        android:background="#F5F5F5" />
+
+    <Button
+        android:id="@+id/btnCriarEnquete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Criar Enquete"
+        android:backgroundTint="#4CAF50"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/btnVoltar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Voltar"
+        android:backgroundTint="#9E9E9E" />
+
+</LinearLayout>

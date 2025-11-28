@@ -27,6 +27,8 @@
         <activity android:name=".CriarEnqueteActivity" android:exported="false" />
         <activity android:name=".ListaEnquetesActivity" android:exported="false" />
         <activity android:name=".VotarEnqueteActivity" android:exported="false" />
+        <activity android:name=".ResultadosActivity" android:exported="false" />
+        <activity android:name=".EditarEnqueteActivity" android:exported="false" />
 
     </application>
 </manifest>

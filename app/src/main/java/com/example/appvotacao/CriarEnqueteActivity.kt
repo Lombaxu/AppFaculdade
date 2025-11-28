@@ -12,42 +12,33 @@ class CriarEnqueteActivity : AppCompatActivity() {
     private lateinit var db: DatabaseHelper
     private lateinit var session: SessionManager
     private val opcoesList = mutableListOf<String>()
+    private var dataExpiracao: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCriarEnqueteBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        android.util.Log.d("DEBUG_ACTIVITY", "CriarEnqueteActivity iniciada")
-
-        try {
-            db = DatabaseHelper(this)
-            session = SessionManager(this)
-            android.util.Log.d("DEBUG_ACTIVITY", "Database e Session criados")
-
-        } catch (e: Exception) {
-            android.util.Log.e("DEBUG_ACTIVITY", "Erro ao criar database: ${e.message}")
-            Toast.makeText(this, "Erro no banco: ${e.message}", Toast.LENGTH_LONG).show()
-        }
+        db = DatabaseHelper(this)
+        session = SessionManager(this)
 
         binding.btnAdicionarOpcao.setOnClickListener {
             val novaOpcao = binding.editNovaOpcao.text.toString().trim()
-            android.util.Log.d("DEBUG_ACTIVITY", "Botão adicionar clicado: $novaOpcao")
             if (novaOpcao.isNotEmpty()) {
                 opcoesList.add(novaOpcao)
                 atualizarListaOpcoes()
                 binding.editNovaOpcao.text.clear()
-                android.util.Log.d("DEBUG_ACTIVITY", "Opção adicionada. Total: ${opcoesList.size}")
             } else {
                 Toast.makeText(this, "Digite uma opção", Toast.LENGTH_SHORT).show()
             }
         }
 
-        binding.btnCriarEnquete.setOnClickListener {
-            android.util.Log.d("DEBUG_ACTIVITY", "Botão criar enquete clicado")
+        binding.btnSelecionarData.setOnClickListener {
+            mostrarDatePicker()
+        }
 
+        binding.btnCriarEnquete.setOnClickListener {
             val titulo = binding.editTituloEnquete.text.toString().trim()
-            android.util.Log.d("DEBUG_ACTIVITY", "Título: $titulo, Opções: ${opcoesList.size}")
 
             if (titulo.isEmpty()) {
                 Toast.makeText(this, "Digite um título", Toast.LENGTH_SHORT).show()
@@ -59,28 +50,21 @@ class CriarEnqueteActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            if (dataExpiracao.isEmpty()) {
+                Toast.makeText(this, "Selecione uma data de expiração", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val usuarioEmail = session.getUsuarioLogado()
-            android.util.Log.d("DEBUG_ACTIVITY", "Usuário logado: $usuarioEmail")
-
             if (usuarioEmail != null) {
-                try {
-                    android.util.Log.d("DEBUG_ACTIVITY", "Chamando db.criarEnquete...")
-                    val sucesso = db.criarEnquete(titulo, opcoesList, usuarioEmail)
-                    android.util.Log.d("DEBUG_ACTIVITY", "Resultado da criação: $sucesso")
-
-                    if (sucesso) {
-                        Toast.makeText(this, "Enquete criada com sucesso!", Toast.LENGTH_SHORT).show()
-                        startActivity(Intent(this, VotacaoActivity::class.java))
-                        finish()
-                    } else {
-                        Toast.makeText(this, "Erro ao criar enquete", Toast.LENGTH_SHORT).show()
-                    }
-                } catch (e: Exception) {
-                    android.util.Log.e("DEBUG_ACTIVITY", "Erro ao criar enquete: ${e.message}")
-                    Toast.makeText(this, "Erro: ${e.message}", Toast.LENGTH_LONG).show()
+                val sucesso = db.criarEnqueteComData(titulo, opcoesList, usuarioEmail, dataExpiracao)
+                if (sucesso) {
+                    Toast.makeText(this, "Enquete criada com sucesso!", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(this, VotacaoActivity::class.java))
+                    finish()
+                } else {
+                    Toast.makeText(this, "Erro ao criar enquete", Toast.LENGTH_SHORT).show()
                 }
-            } else {
-                Toast.makeText(this, "Usuário não logado", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -88,6 +72,28 @@ class CriarEnqueteActivity : AppCompatActivity() {
             startActivity(Intent(this, VotacaoActivity::class.java))
             finish()
         }
+    }
+
+    private fun mostrarDatePicker() {
+        val calendar = java.util.Calendar.getInstance()
+        val year = calendar.get(java.util.Calendar.YEAR)
+        val month = calendar.get(java.util.Calendar.MONTH)
+        val day = calendar.get(java.util.Calendar.DAY_OF_MONTH)
+
+        val datePicker = android.app.DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
+            val dataSelecionada = java.util.Calendar.getInstance()
+            dataSelecionada.set(selectedYear, selectedMonth, selectedDay)
+
+            val formato = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+            dataExpiracao = formato.format(dataSelecionada.time)
+
+            val formatoExibicao = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
+            binding.textDataSelecionada.text = "Data de expiração: ${formatoExibicao.format(dataSelecionada.time)}"
+
+        }, year, month, day)
+
+        datePicker.datePicker.minDate = System.currentTimeMillis() - 1000
+        datePicker.show()
     }
 
     private fun atualizarListaOpcoes() {

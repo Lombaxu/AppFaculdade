@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
+import android.widget.TextView
 import com.example.appvotacao.databinding.ActivityVotarEnqueteBinding
 
 class VotarEnqueteActivity : AppCompatActivity() {
@@ -27,8 +28,26 @@ class VotarEnqueteActivity : AppCompatActivity() {
         enqueteId = intent.getIntExtra("ENQUETE_ID", 0)
         enqueteTitulo = intent.getStringExtra("ENQUETE_TITULO") ?: ""
 
-        binding.textTituloEnquete.text = enqueteTitulo
+        if (db.isEnqueteExpirada(enqueteId)) {
+            binding.textTituloEnquete.text = "ENQUETE EXPIRADA: $enqueteTitulo"
+            binding.textTituloEnquete.setTextColor(0xFFF44336.toInt())
+            binding.radioGroupOpcoes.visibility = android.view.View.GONE
+            binding.btnVotar.visibility = android.view.View.GONE
 
+            val textExpirada = TextView(this)
+            textExpirada.text = "Esta enquete expirou e não aceita mais votos."
+            textExpirada.textSize = 16f
+            textExpirada.gravity = android.view.Gravity.CENTER
+            textExpirada.setPadding(0, 50, 0, 0)
+            binding.radioGroupOpcoes.addView(textExpirada)
+
+            binding.btnVoltar.setOnClickListener {
+                finish()
+            }
+            return
+        }
+
+        binding.textTituloEnquete.text = enqueteTitulo
         carregarOpcoes()
 
         binding.btnVotar.setOnClickListener {
@@ -36,7 +55,6 @@ class VotarEnqueteActivity : AppCompatActivity() {
         }
 
         binding.btnVoltar.setOnClickListener {
-            startActivity(Intent(this, ListaEnquetesActivity::class.java))
             finish()
         }
     }
@@ -65,13 +83,16 @@ class VotarEnqueteActivity : AppCompatActivity() {
             return
         }
 
-        val sucesso = db.votarNaOpcao(selectedId)
-        if (sucesso) {
-            Toast.makeText(this, "Voto registrado com sucesso!", Toast.LENGTH_SHORT).show()
-            startActivity(Intent(this, ListaEnquetesActivity::class.java))
-            finish()
-        } else {
-            Toast.makeText(this, "Erro ao registrar voto", Toast.LENGTH_SHORT).show()
+        val usuarioEmail = session.getUsuarioLogado()
+        if (usuarioEmail != null) {
+            val sucesso = db.registrarVotoComHistorico(usuarioEmail, enqueteId, selectedId)
+            if (sucesso) {
+                Toast.makeText(this, "Voto registrado com sucesso!", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, ListaEnquetesActivity::class.java))
+                finish()
+            } else {
+                Toast.makeText(this, "Você já votou nesta enquete!", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }
